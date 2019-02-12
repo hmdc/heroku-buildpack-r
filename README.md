@@ -3,71 +3,23 @@
 This is a [Heroku buildpack](https://devcenter.heroku.com/articles/buildpacks) for applications which use
 [R](https://www.r-project.org/) for statistical computing and [CRAN](https://cran.r-project.org/) for R packages.
 
-R is ‘GNU S’, a freely available language and environment for statistical computing and graphics which provides
-a wide variety of statistical and graphical techniques: linear and nonlinear modelling, statistical tests, time
-series analysis, classification, clustering, etc. Please consult
-the [R project homepage](https://www.r-project.org/) for further information.
-
-[CRAN](https://cran.r-project.org/) is a network of ftp and web servers around the world that
-store identical, up-to-date, versions of code and documentation for R.
-
-It also includes support for the [Shiny](https://shiny.rstudio.com/) web application framework.
+The master branch of this repository contains the canonical version of the buildpack for use by IQSS/VPAL-R. The upstream branch is [virtualstaticvoid/heroku-buildpack-r.git#heroku-16-packrat](https://github.com/virtualstaticvoid/heroku-buildpack-r/tree/heroku-16-packrat).
 
 ## Usage
 
-To use this version, the buildpack URL is `https://github.com/virtualstaticvoid/heroku-buildpack-r.git#heroku-16`.
+To use this version, the buildpack URL is `https://github.com/harvard-vpal/heroku-buildpack-r`.
 
-The buildpack will detect your app makes use of R if it has an `init.R` or `run.R` file in the root directory.
-
-If only a `run.R` file is found, then the buildpack will be configured as a Shiny application.
-
-The R runtime is vendored into your slug, and the `init.R` program is executed in order to install any additional R packages.
+The buildpack will detect your app makes use of R if it has a `run.R` file in the root directory.
 
 ### Installing R Packages
 
-The `init.R` file is executed during slug compilation, so it can be used to install R packages if required.
-
-The following file can be used to install packages if they aren't already installed.
-
-Add the package names you want to install to the `my_packages` list:
-
-```
-# init.R
-#
-# Example R code to install packages if not already installed
-#
-
-my_packages = c("package_name_1", "package_name_2", ...)
-
-install_if_missing = function(p) {
-  if (p %in% rownames(installed.packages()) == FALSE) {
-    install.packages(p)
-  }
-}
-
-invisible(sapply(my_packages, install_if_missing))
-```
-
-R packages can also be installed, by providing a `tar.gz` package archive file, if a specific version is required, or it is not a published package. See [local-packages](test/local-packages) for an example.
-
-```
-# init.R
-#
-# Example R program to installed package from local path
-#
-
-install.packages("/app/PackageName-Version.tar.gz", repos=NULL, type="source")
-```
-
-*NOTE:* The path to the package archive needs to be an absolute path, based off the `/app` root path, which is the location of your applications files on Heroku.
+The buildpack requires you are using [Packrat](https://github.com/rstudio/packrat) to lock down package dependencies. You must run `packrat::snapshot()` before making your first push to Heroku. If you modify the snapshot by adding, removing, or changing a package, you must clear the Heroku build cache before redeploying (see **Caching** below).
 
 ### Installing Binary Dependencies
 
-If the R packages have binary dependencies, they can be specified by providing an `Aptfile` which contains the Ubuntu package names to install.
+If the R packages have binary dependencies, they can be specified by providing an `Aptfile` in your repository's root that contains the Ubuntu package names to install.
 
-Examples include [gmp](test/gmp/Aptfile), [rgeos](test/rgeos/Aptfile) and [topicmodels](test/topicmodels/Aptfile) where Ubuntu packages are installed during slug compilation.
-
-This is based on the same technique as used by the [heroku-buildpack-apt](https://elements.heroku.com/buildpacks/heroku/heroku-buildpack-apt) buildpack.
+For instance, Tidyverse packages need `libxml2-dev` and RPostgreSQL needs `libpq-dev`. Examine the log of a failed `git push heroku` command for names of other Ubuntu/Debian dependencies your R packages might need.
 
 ### R Console
 
@@ -77,33 +29,17 @@ You can run the R console application as follows:
 $ heroku run R ...
 ```
 
-Type `q()` to exit the console when you are finished.
-
-You can run the Rscript utility as follows:
+Type `q()` to exit the console when you are finished. You can run the Rscript utility as follows:
 
 ```
 $ heroku run Rscript ...
 ```
 
-_Note that the Heroku slug is read-only, so any changes you make during the session will be discarded._
+_Note that the Heroku slug has an ephemeral file system and is effectively read-only, so any changes you make during the session will be discarded._
 
 ### Shiny Applications
 
-Shiny applications must provide the `run.R` file, but can also include an `init.R` in order to install additional R packages. The Shiny package does not need to be installed, as it is included in the buildpack already.
-
-The `run.R` file should contain at least the following code, in order to run the web application. The `PORT` environment variable, provided by Heroku, is used to configure Shiny accordingly, and the host should be `0.0.0.0`.
-
-```
-library(shiny)
-
-port <- Sys.getenv('PORT')
-
-shiny::runApp(
-  appDir = getwd(),
-  host = '0.0.0.0',
-  port = as.numeric(port)
-)
-```
+See [apache-shiny-demo](https://github.com/harvard-vpal/apache-shiny-demo) for an example Shiny app that uses this buildpack and [heroku-buildpack-apache](https://github.com/harvard-vpal/heroku-buildpack-apache) to enable multiple, load-balanced R processes.
 
 ### Scheduling a Recurring Job
 
@@ -115,16 +51,15 @@ An example command for the scheduler, to run `prog.r`, would be `R -f /app/prog.
 
 ### R Versions
 
-The buildpack uses R 3.4.4 by default, however it is possible to use a different version if required. This is done by providing a `.r-version` file in the root directory, which contains the R version to use.
+The buildpack uses R 3.4.3 by default, however it is possible to use a different version if required. This is done by providing a `.r-version` file in the root directory, which contains the R version to use.
 
-The following R versions are provided on the `heroku-16` stack:
+The following R versions are provide:
 
 * 3.3.3
 * 3.4.0
 * 3.4.1
 * 3.4.2
 * 3.4.3
-* 3.4.4
 
 ### Buildpack Versions
 
@@ -134,10 +69,8 @@ E.g. Replace `branch_or_tag_name` with the desired branch or tag name:
 
 ```
 $ heroku create --stack heroku-16 \
-    --buildpack https://github.com/virtualstaticvoid/heroku-buildpack-r.git#branch_or_tag_name
+    --buildpack https://github.com/harvard-vpal/heroku-buildpack-r.git#branch_or_tag_name
 ```
-
-*NOTE:* The `.buildpack-version` file is no longer supported and will be ignored.
 
 ### Buildpack Binaries
 
@@ -154,23 +87,9 @@ The buildpack includes the following default process types:
 
 The `R` and `Rscript` executables are available like any other executable, via the `heroku run` command.
 
-### Fake Chroot
-
-This version of the buildpack uses a fake chroot in order to properly support R on Heroku. This is because R presents some unique challenges when used on Heroku. Checkout the comments in [`bin/compile`](bin/compile) for more details.
-
-The directory layout of the buildpack places the chroot in `/app/.root` and copies application files in `/app` into `/app/.root/app`. Previously a symlink was used to link `/app` into `/app/.root/app` but this proved to be problematic.
-
-*NB*: If your application provides a `Procfile` for custom process types, you may need to include the `fakechroot fakeroot chroot` command with the chroot path `/app/.root`, in order to execute your application within the chroot. This isn't necessary for the `R` and `RScript` executables though.
-
-For example, this command runs bash within the chroot context:
-
-`fakechroot fakeroot chroot /app/.root /bin/bash`
-
 ### Caching
 
-To improve the time it takes to deploy, the buildpack caches the R binaries, any additional binaries installed using the `Aptfile` and the compiled package binaries.
-
-If you need to purge the cache, it is possible by using [heroku-repo](https://github.com/heroku/heroku-repo) CLI plugin.
+To improve the time it takes to deploy, the buildpack caches the R binaries, any additional binaries installed using the `Aptfile` and the compiled package binaries. If you need to purge the cache, it is possible by using [heroku-repo](https://github.com/heroku/heroku-repo) CLI plugin.
 
 To install the plugin run:
 
@@ -181,7 +100,7 @@ heroku plugins:install heroku-repo
 To purge the buildpack cache, run the following command from your application's source code directory:
 
 ```bash
-heroku repo:purge_cache
+heroku repo:purge_cache -a your-app-name
 ```
 
 See the [purge-cache](https://github.com/heroku/heroku-repo#purge-cache) documentation for more information.
