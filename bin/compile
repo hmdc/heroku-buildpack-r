@@ -368,6 +368,8 @@ if [ ! -f "$BUILD_DIR/httpd.conf" ]; then
   cp "$BUILDPACK_DIR/config/httpd.conf" "$BUILD_DIR/httpd.conf"
 fi
 
+cp "$BUILDPACK_DIR/config/cas_harvard_key.conf" "$BUILD_DIR/cas_harvard_key.conf"
+
 # copy over environment
 mkdir -p "$BUILD_DIR/.profile.d"
 cp "$BUILDPACK_DIR/bin/renv.sh" "$BUILD_DIR/.profile.d/renv.sh"

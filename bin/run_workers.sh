@@ -28,6 +28,10 @@ ProxySet stickysession=route
 </Proxy>
 EOF
 
+if [[ "${USE_HARVARD_KEY}" == "YES" ]]; then
+    mv /app/cas_harvard_key.conf /app/apache/etc/apache2/cas_harvard_key.conf
+fi
+
 for port in $(seq $PORT_START $PORT_END)
 do
 	echo "Starting worker on $port..."
