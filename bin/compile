@@ -364,7 +364,7 @@ rm -rf $CHROOT_DIR/var/lib/dpkg
 
 # copy over base apache configuration if one doesn't alredy exist in the build
 # dir.
-if [ ! -f "$BUILD_DIR/httpd.conf" ];
+if [ ! -f "$BUILD_DIR/httpd.conf" ]; then
   cp "$BUILDPACK_DIR/config/httpd.conf" "$BUILD_DIR/httpd.conf"
 fi
 
