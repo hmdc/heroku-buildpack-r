@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 DYNO_CORES=$(grep -c processor /proc/cpuinfo 2>/dev/null)
-CORES=${SHINY_NUM_PROCS:-${DYNO_CORES}}
+# Divide by 2 because Shiny takes up a lot of memory.
+CORES=${SHINY_NUM_PROCS:-$((${DYNO_CORES} / 2))}
 PORT_START=12000
 # Index starts at 0
 PORT_END=$(($PORT_START + $(($CORES - 1))))
