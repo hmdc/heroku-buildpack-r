@@ -378,7 +378,7 @@ cp "$BUILDPACK_DIR/bin/renv.sh" "$BUILD_DIR/.profile.d/renv.sh"
 mkdir -p "$BUILD_DIR/bin"
 cp "$BUILDPACK_DIR/bin/R_wrapper" "$BUILD_DIR/bin/R"
 cp "$BUILDPACK_DIR/bin/Rscript_wrapper" "$BUILD_DIR/bin/Rscript"
-cp "$BUILDPACK_DIR/bin/run_workers.sh" "$BUILD_DIR/bin/run_workers.sh"
+cp "$BUILDPACK_DIR/bin/run_workers.sh" "$BUILD_DIR/run_workers.sh"
 
 # give environment to later buildpacks
 cat > "$BUILDPACK_DIR/export" <<EOL
