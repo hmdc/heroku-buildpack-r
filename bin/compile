@@ -362,6 +362,14 @@ rm -rf $CHROOT_DIR/var/cache/apt
 rm -rf $CHROOT_DIR/var/lib/apt/lists/*
 rm -rf $CHROOT_DIR/var/lib/dpkg
 
+# copy over base apache configuration if one doesn't alredy exist in the build
+# dir.
+if [ ! -f "$BUILD_DIR/httpd.conf" ]; then
+  cp "$BUILDPACK_DIR/config/httpd.conf" "$BUILD_DIR/httpd.conf"
+fi
+
+cp "$BUILDPACK_DIR/config/cas_harvard_key.conf" "$BUILD_DIR/cas_harvard_key.conf"
+
 # copy over environment
 mkdir -p "$BUILD_DIR/.profile.d"
 cp "$BUILDPACK_DIR/bin/renv.sh" "$BUILD_DIR/.profile.d/renv.sh"
@@ -370,6 +378,7 @@ cp "$BUILDPACK_DIR/bin/renv.sh" "$BUILD_DIR/.profile.d/renv.sh"
 mkdir -p "$BUILD_DIR/bin"
 cp "$BUILDPACK_DIR/bin/R_wrapper" "$BUILD_DIR/bin/R"
 cp "$BUILDPACK_DIR/bin/Rscript_wrapper" "$BUILD_DIR/bin/Rscript"
+cp "$BUILDPACK_DIR/bin/run_workers.sh" "$BUILD_DIR/run_workers.sh"
 
 # give environment to later buildpacks
 cat > "$BUILDPACK_DIR/export" <<EOL
