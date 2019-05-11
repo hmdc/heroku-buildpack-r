@@ -215,6 +215,7 @@ pushd $CHROOT_DIR > /dev/null
 # "Too many levels of symlinks" errors
 mkdir -p app
 rsync --recursive --exclude .tools --exclude .root $BUILD_DIR/ app
+rsync --recursive .root/etc/R/ .root/usr/lib/R/etc
 # rsync --recursive --exclude .root $BUILD_DIR/ app
 
 # make /app the home directory since application
