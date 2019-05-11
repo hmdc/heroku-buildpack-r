@@ -231,12 +231,6 @@ sed -i "s#root:x:0:0:root:/root:/bin/bash#root:x:0:0:root:/app:/bin/bash#g" etc/
 #        /usr/lib/libR.so => ../lib/R/lib/libR.so
 #
 fakechroot fakeroot chroot $CHROOT_DIR \
-  /bin/sh -c 'ls /'
-fakechroot fakeroot chroot $CHROOT_DIR \
-  /bin/sh -c 'mkdir /app; ln -sf / /app/.root'
-fakechroot fakeroot chroot $CHROOT_DIR \
-  /bin/sh -c 'ls -all /app; ls -all /usr/lib/x86_64-linux-gnu'
-fakechroot fakeroot chroot $CHROOT_DIR \
   /bin/sh -c 'cd /usr/lib && ln -sf ../lib/R/lib/libR.so libR.so'
 
 #
@@ -295,6 +289,10 @@ if [[ ! -z "$INIT_FILE" ]]; then
   #  replacements, so using a Ruby program, as Ruby is installed on Heroku by default
   ruby "$BUILDPACK_DIR/bin/util.rb" "$WRAPPER" "$INIT_FILE" "$BUILD_DIR" "$CRAN_MIRROR"
 
+  # Debug
+  fakechroot fakeroot chroot $CHROOT_DIR \
+    ls -ll /usr/lib/x86_64-linux-gnu/
+      
   # execute the init wrapper
   # working directory must be /app so that provided packages/scripts can be found
   fakechroot fakeroot chroot $CHROOT_DIR \
