@@ -117,6 +117,7 @@ function patch_chroot() {
   sed -i "s#$old#$new#g" "$BUILD_DIR/.tools/fakechroot/etc/fakechroot/debootstrap.env"
   sed -i "s#$old#$new#g" "$BUILD_DIR/.tools/fakechroot/etc/fakechroot/rinse.env"
   sed -i "s#$old#$new#g" "$BUILD_DIR/.tools/fakechroot/lib/fakechroot/libfakechroot.la"
+  sed -i "s#$old#$new#g" "$BUILD_DIR/.tools/fakeroot/bin/fakeroot"
 }
 
 # debug
@@ -162,7 +163,6 @@ CHROOT_DIR="$BUILD_DIR/.root"
 # Note: fakeroot is included at buildtime, so no need to reference our copy at this stage
 
 export PATH="$FAKECHROOT_DIR/sbin:$FAKECHROOT_DIR/bin:$FAKEROOT_DIR/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
-export LD_LIBRARY_PATH="$FAKECHROOT_DIR/lib/fakechroot:$FAKEROOT_DIR/lib/x86_64-linux-gnu/libfakeroot:$LD_LIBRARY_PATH"
 # load any application defined environment variables,
 # so that they can be accessed by this script
 export_env_dir "$ENV_DIR"
@@ -214,8 +214,8 @@ pushd $CHROOT_DIR > /dev/null
 # and since packrat symlinks to system libraries which causes
 # "Too many levels of symlinks" errors
 mkdir -p app
-# rsync --recursive --exclude .tools --exclude .root $BUILD_DIR/ app
-rsync --recursive --exclude .root $BUILD_DIR/ app
+rsync --recursive --exclude .tools --exclude .root $BUILD_DIR/ app
+# rsync --recursive --exclude .root $BUILD_DIR/ app
 
 # make /app the home directory since application
 # authors will expect the same behaviour within the chroot
