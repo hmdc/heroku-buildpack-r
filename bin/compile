@@ -130,16 +130,16 @@ ENV_DIR=$3
 
 # fix STACK variable if unset
 if [[ -z "${STACK}" ]]; then
-  STACK="heroku-16"
+  STACK="heroku-18"
 fi
 
 # ensure correct stack
-if [[ ! "$STACK" == "heroku-16" ]]; then
+if [[ ! "$STACK" == "heroku-18" ]]; then
 
   echo
-  echo "-----> ERROR: This version of the buildpack is intended for use with the 'heroku-16' stack"
+  echo "-----> ERROR: This version of the buildpack is intended for use with the 'heroku-18' stack"
   echo
-  echo "       Use the 'heroku stack:set' CLI command to use the 'heroku-16' stack."
+  echo "       Use the 'heroku stack:set' CLI command to use the 'heroku-18' stack."
   echo "       See https://devcenter.heroku.com/articles/stack for more information."
   echo
   exit 1
@@ -167,7 +167,7 @@ export PATH="$FAKECHROOT_DIR/sbin:$FAKECHROOT_DIR/bin:/usr/local/sbin:/usr/local
 export_env_dir "$ENV_DIR"
 
 # S3 bucket, cran mirror, buildpack version can be set via environment
-S3_BUCKET=${S3_BUCKET:-"heroku-buildpack-r"}
+S3_BUCKET=${S3_BUCKET:-"heroku-r-buildpack"}
 CRAN_MIRROR=${CRAN_MIRROR:-"https://cloud.r-project.org"}
 BUILD_PACK_VERSION=${BUILD_PACK_VERSION:-latest}
 
@@ -193,12 +193,6 @@ else
   echo "Downloading and unpacking R binaries ($R_BINARIES)" | indent
 
   curl $R_BINARIES -s -o - | tar xzf - -C .
-
-  # # does't provide much of a "speed boost"
-  # if [[ ! -f "$CACHE_DIR/$R_BINARIES_FILE" ]]; then
-  #   curl $R_BINARIES -s -o "$CACHE_DIR/$R_BINARIES_FILE"
-  # fi
-  # tar xzf "$CACHE_DIR/$R_BINARIES_FILE" -C .
 
 fi
 
