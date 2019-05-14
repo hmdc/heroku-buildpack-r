@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+
+####### Configure environment
+set -e			# fail fast
+set -o pipefail	# don't ignore exit codes when piping output
+# set -x		# enable debugging
+
+# Configure directories
+BUILD_DIR=$1	# the location of the app
+CACHE_DIR=$2	# a location the buildpack can use to cache build artifacts between builds
+ENV_DIR=$3		# contains a file for each of the application’s configuration variables
+
+BUILDPACK_HOME=$(cd $(dirname $0); cd ..; pwd)	# buildpack directory
+
+# Load some convenience functions like info(), echo(), and indent()
+source "$BUILDPACK_HOME/bin/common.sh"
+trap build_failed ERR # Provide hook to deal with errors
+
+if [ -f "$BUILD_DIR/.apache/.apache.cfg" ]; then
+	info "Found $BUILD_DIR/.apache/.apache.cfg"
+	source "$BUILD_DIR/.apache/.apache.cfg"
+fi
+
+if [ -z "$APACHE_VERSION" ]; then
+	APACHE_VERSION="2.4.38"
+fi
+
+PREFIX_PATH="/app/apache"
+if [ -z "$CONFIGURE_ARGS" ]; then
+	CONFIGURE_ARGS="--prefix=$PREFIX_PATH \
+		--enable-dav \
+		--enable-dav-lock \
+		--with-included-apr \
+		--enable-layout=GNU \
+		--enable-mods-shared=all \
+		--enable-rewrite \
+		--enable-deflate \
+		--with-mpm=event"
+else
+	CONFIGURE_ARGS="--prefix=$PREFIX_PATH $CONFIGURE_ARGS"
+fi
+
+# Load config vars into environment
+export_env_dir $ENV_DIR
+
+CACHED_APACHE_VERSION=$(cat $CACHE_DIR/apache/.apache-version 2>/dev/null || true)
+CACHED_MOD_CAS_VERSION=$(cat $CACHE_DIR/apache/.mod_cas-version 2>/dev/null || true)
+MOD_CAS_VERSION="1.2"
+
+if [ "$CACHED_APACHE_VERSION" != "$APACHE_VERSION" ] || [ "$CACHED_MOD_CAS_VERSION" != "$MOD_CAS_VERSION" ]; then
+	info "Apache version changed since last build; old: $CACHED_APACHE_VERSION -> new: $APACHE_VERSION"
+	APACHE_SRC_DIR="httpd-$APACHE_VERSION"
+
+	info "Purge cached Apache..."
+	rm -rf "$CACHE_DIR/apache"
+
+	cd "$BUILD_DIR"
+
+	info "Downloading Apache $APACHE_VERSION..."
+	curl -L https://archive.apache.org/dist/httpd/httpd-$APACHE_VERSION.tar.gz | tar xz
+
+	cd "$APACHE_SRC_DIR"
+	mkdir -p srclib/apr
+	mkdir -p srclib/apr-util
+
+	curl -L https://archive.apache.org/dist/apr/apr-1.6.3.tar.gz | tar xz -C srclib/apr --strip-components=1
+	curl -L https://archive.apache.org/dist/apr/apr-util-1.6.1.tar.gz | tar xz -C srclib/apr-util --strip-components=1
+
+	head "Configuring Apache with args: $CONFIGURE_ARGS"
+	./configure $CONFIGURE_ARGS 2>&1 | indent
+	head "Compiling with Make"
+	make -s -j 9 2>&1 | indent
+	head "Installing with Make"
+	make install -s | indent
+
+	info "Saving Apache version file..."
+	echo $APACHE_VERSION > "$PREFIX_PATH/.apache-version"
+
+	#
+	# mod_cas build
+	#
+	#
+	cd "$BUILD_DIR"
+	info "Downloading mod_cas $MOD_CAS_VERSION"
+	curl -L https://github.com/apereo/mod_auth_cas/archive/v${MOD_CAS_VERSION}.tar.gz | tar xz
+	cd "mod_auth_cas-${MOD_CAS_VERSION}"
+	head "Configuring mod_cas $MOD_CAS_VERSION"
+	autoreconf -ivf 2>&1|indent
+	./configure --prefix=$PREFIX_PATH --with-apxs=$PREFIX_PATH/bin/apxs --with-apr=$PREFIX_PATH/bin/apr-1-config 2>&1 |indent
+	head "Compiling with Make"
+	make -s -j 9 2>&1 | indent
+	head "Installing with Make"
+	make install -s | indent
+	info "Saving mod_cas version file..."
+	echo $MOD_CAS_VERSION > "$PREFIX_PATH/.mod_cas-version"
+
+	info "Saving Apache+mod_cas installation to cache..."
+	cp -av "$PREFIX_PATH" "$CACHE_DIR"
+
+	info "Cleaning up mod_cas source files..."
+	cd ..
+	rm -rf "mod_auth_cas-${MOD_CAS_VERSION}"
+
+	info "Saving Apache installation to cache..."
+	mkdir -p "${CACHE_DIR}/apache"
+	cp -av "$PREFIX_PATH" "$CACHE_DIR"
+
+	info "Cleaning up Apache source files..."
+	cd ..
+	rm -rf "$APACHE_SRC_DIR"
+fi
+
+info "Copying Apache $APACHE_VERSION into $BUILD_DIR ..."
+cp -R "$CACHE_DIR/apache" "$BUILD_DIR"
+
+if [ -f "$BUILD_DIR/httpd.conf" ]; then
+	info "Using application configuration files..."
+	cp "$BUILD_DIR/httpd.conf" $BUILD_DIR/apache/etc/apache2
+else
+	info "Installing configuration files..."
+	cp "$BUILDPACK_HOME/config/httpd.conf" $BUILD_DIR/apache/etc/apache2
+fi
+
+info "Installing startup script..."
+cp "$BUILDPACK_HOME/bin/boot.sh" $BUILD_DIR
+chmod +x "$BUILD_DIR/boot.sh"
+
+info "Building runtime environment"
+mkdir -p $BUILD_DIR/.profile.d
+echo "export PATH=\"/app/apache/bin:/app/apache/sbin:\$PATH\";" > $BUILD_DIR/.profile.d/apache.sh
