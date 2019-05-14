@@ -149,7 +149,7 @@ fi
 
 # Build and compile apache
 BUILDPACK_HOME=$(cd $(dirname $0); cd ..; pwd)
-$BUILDPACK_HOME/bin/compile_apache
+$BUILDPACK_HOME/bin/compile_apache "${BUILD_DIR}" "${CACHE_DIR}" "${ENV_DIR}"
 
 # read in R version if file exists
 if [[ -f "$BUILD_DIR/.r-version" ]]; then
