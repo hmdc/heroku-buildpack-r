@@ -147,6 +147,9 @@ if [[ ! "$STACK" == "heroku-18" ]]; then
 
 fi
 
+# Build and compile apache
+./compile_apache
+
 # read in R version if file exists
 if [[ -f "$BUILD_DIR/.r-version" ]]; then
   R_VERSION=$(read_var "$BUILD_DIR/.r-version")
