@@ -9,7 +9,7 @@ if [ -f "$1/run.R" ]; then
 # R Shiny
 default_process_types:
   console: fakechroot fakeroot chroot /app/.root /bin/bash
-  web: fakechroot fakeroot chroot /app/.root /bin/sh -c 'cd /app && /usr/bin/R -f /app/run.R --gui-none --no-save'
+  web: bash ./boot.sh "/app/run_workers.sh"
 EOF
 
 else

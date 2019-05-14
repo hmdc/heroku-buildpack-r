@@ -117,6 +117,7 @@ function patch_chroot() {
   sed -i "s#$old#$new#g" "$BUILD_DIR/.tools/fakechroot/etc/fakechroot/debootstrap.env"
   sed -i "s#$old#$new#g" "$BUILD_DIR/.tools/fakechroot/etc/fakechroot/rinse.env"
   sed -i "s#$old#$new#g" "$BUILD_DIR/.tools/fakechroot/lib/fakechroot/libfakechroot.la"
+  sed -i "s#$old#$new#g" "$BUILD_DIR/.tools/fakeroot/bin/fakeroot"
 }
 
 # debug
@@ -130,21 +131,25 @@ ENV_DIR=$3
 
 # fix STACK variable if unset
 if [[ -z "${STACK}" ]]; then
-  STACK="heroku-16"
+  STACK="heroku-18"
 fi
 
 # ensure correct stack
-if [[ ! "$STACK" == "heroku-16" ]]; then
+if [[ ! "$STACK" == "heroku-18" ]]; then
 
   echo
-  echo "-----> ERROR: This version of the buildpack is intended for use with the 'heroku-16' stack"
+  echo "-----> ERROR: This version of the buildpack is intended for use with the 'heroku-18' stack"
   echo
-  echo "       Use the 'heroku stack:set' CLI command to use the 'heroku-16' stack."
+  echo "       Use the 'heroku stack:set' CLI command to use the 'heroku-18' stack."
   echo "       See https://devcenter.heroku.com/articles/stack for more information."
   echo
   exit 1
 
 fi
+
+# Build and compile apache
+BUILDPACK_HOME=$(cd $(dirname $0); cd ..; pwd)
+$BUILDPACK_HOME/bin/compile_apache "${BUILD_DIR}" "${CACHE_DIR}" "${ENV_DIR}"
 
 # read in R version if file exists
 if [[ -f "$BUILD_DIR/.r-version" ]]; then
@@ -157,17 +162,17 @@ fi
 # environment
 TOOLS_DIR="$BUILD_DIR/.tools"
 FAKECHROOT_DIR="$TOOLS_DIR/fakechroot"
+FAKEROOT_DIR="$TOOLS_DIR/fakeroot"
 CHROOT_DIR="$BUILD_DIR/.root"
 # Note: fakeroot is included at buildtime, so no need to reference our copy at this stage
 
-export PATH="$FAKECHROOT_DIR/sbin:$FAKECHROOT_DIR/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
-
+export PATH="$FAKECHROOT_DIR/sbin:$FAKECHROOT_DIR/bin:$FAKEROOT_DIR/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 # load any application defined environment variables,
 # so that they can be accessed by this script
 export_env_dir "$ENV_DIR"
 
 # S3 bucket, cran mirror, buildpack version can be set via environment
-S3_BUCKET=${S3_BUCKET:-"heroku-buildpack-r"}
+S3_BUCKET=${S3_BUCKET:-"heroku-r-buildpack"}
 CRAN_MIRROR=${CRAN_MIRROR:-"https://cloud.r-project.org"}
 BUILD_PACK_VERSION=${BUILD_PACK_VERSION:-latest}
 
@@ -194,12 +199,6 @@ else
 
   curl $R_BINARIES -s -o - | tar xzf - -C .
 
-  # # does't provide much of a "speed boost"
-  # if [[ ! -f "$CACHE_DIR/$R_BINARIES_FILE" ]]; then
-  #   curl $R_BINARIES -s -o "$CACHE_DIR/$R_BINARIES_FILE"
-  # fi
-  # tar xzf "$CACHE_DIR/$R_BINARIES_FILE" -C .
-
 fi
 
 popd > /dev/null
@@ -221,7 +220,6 @@ pushd $CHROOT_DIR > /dev/null
 mkdir -p app
 rsync --recursive --exclude .tools --exclude .root $BUILD_DIR/ app
 
-
 # make /app the home directory since application
 # authors will expect the same behaviour within the chroot
 # as the heroku instance. I.e. /app exists and contains their code etc.
@@ -236,7 +234,6 @@ sed -i "s#root:x:0:0:root:/root:/bin/bash#root:x:0:0:root:/app:/bin/bash#g" etc/
 #        changing the symlink to the following works
 #        /usr/lib/libR.so => ../lib/R/lib/libR.so
 #
-
 fakechroot fakeroot chroot $CHROOT_DIR \
   /bin/sh -c 'cd /usr/lib && ln -sf ../lib/R/lib/libR.so libR.so'
 
@@ -296,6 +293,10 @@ if [[ ! -z "$INIT_FILE" ]]; then
   #  replacements, so using a Ruby program, as Ruby is installed on Heroku by default
   ruby "$BUILDPACK_DIR/bin/util.rb" "$WRAPPER" "$INIT_FILE" "$BUILD_DIR" "$CRAN_MIRROR"
 
+  # Debug
+  fakechroot fakeroot chroot $CHROOT_DIR \
+    ls -ll /usr/lib/x86_64-linux-gnu/
+      
   # execute the init wrapper
   # working directory must be /app so that provided packages/scripts can be found
   fakechroot fakeroot chroot $CHROOT_DIR \

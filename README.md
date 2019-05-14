@@ -7,7 +7,7 @@ The master branch of this repository contains the canonical version of the build
 
 ## Usage
 
-To use this version, the buildpack URL is `https://github.com/harvard-vpal/heroku-buildpack-r`.
+To use this version, the buildpack URL is `https://github.com/hmdc/heroku-buildpack-r`.
 
 The buildpack will detect your app makes use of R if it has a `run.R` file in the root directory.
 
@@ -39,7 +39,7 @@ _Note that the Heroku slug has an ephemeral file system and is effectively read-
 
 ### Shiny Applications
 
-See [apache-shiny-demo](https://github.com/harvard-vpal/apache-shiny-demo) for an example Shiny app that uses this buildpack and [heroku-buildpack-apache](https://github.com/harvard-vpal/heroku-buildpack-apache) to enable multiple, load-balanced R processes.
+See [apache-shiny-demo](https://github.com/hmdc/heroku-shiny-demo).
 
 ### Scheduling a Recurring Job
 
@@ -51,15 +51,11 @@ An example command for the scheduler, to run `prog.r`, would be `R -f /app/prog.
 
 ### R Versions
 
-The buildpack uses R 3.4.3 by default, however it is possible to use a different version if required. This is done by providing a `.r-version` file in the root directory, which contains the R version to use.
+The buildpack uses R 3.6.0 by default, however it is possible to use a different version if required. This is done by providing a `.r-version` file in the root directory, which contains the R version to use.
 
 The following R versions are provide:
 
-* 3.3.3
-* 3.4.0
-* 3.4.1
-* 3.4.2
-* 3.4.3
+* 3.6.0
 
 ### Buildpack Versions
 
@@ -68,13 +64,13 @@ To reference a specific version of the buildpack, add the Git branch or tag name
 E.g. Replace `branch_or_tag_name` with the desired branch or tag name:
 
 ```
-$ heroku create --stack heroku-16 \
+$ heroku create --stack heroku-18 \
     --buildpack https://github.com/harvard-vpal/heroku-buildpack-r.git#branch_or_tag_name
 ```
 
 ### Buildpack Binaries
 
-The binaries used by the buildpack are hosted on AWS S3 at [https://heroku-buildpack-r.s3.amazonaws.com](https://heroku-buildpack-r.s3.amazonaws.com).
+The binaries used by the buildpack are hosted on AWS S3 at [https://heroku-r-buildpack.s3.amazonaws.com](https://heroku-r-buildpack.s3.amazonaws.com).
 
 See the [heroku-buildpack-r-build](https://github.com/virtualstaticvoid/heroku-buildpack-r-build) repository for building the R binaries yourself.
 
@@ -125,8 +121,22 @@ Check the CRAN [mirror status](https://cran.r-project.org/mirmon_report.html) pa
 
 ## Caveats
 
-Due to the size of the R runtime, the slug size on Heroku, without any additional packages or program code, is approximately 150Mb.
+* Due to the size of the R runtime, the slug size on Heroku, without any additional packages or program code, is approximately 150Mb.
 If additional R packages are installed then the slug size will increase.
+
+* You can only use one dyno. Each dyno has >= 4 cores. The R shiny buildpack automatically launches as many R processes as cores in order
+to serve more requests concurrently. Load balancing across multiple dynos will cause unexpected failures as R session management
+requires sticky sessions which Heroku does not provide. 
+
+* You may use (session affinity)[https://devcenter.heroku.com/articles/session-affinity] to load balance R sessions across multiple dynos
+if you are inside the Common Runtime, working with data which is not classified secure. However, dynos restart daily, which would
+invalidate any currently running sessions. You will experience the same failures as referenced in the previous caveat -- our
+suggestion is to stick with one dyno. You may increase the dyno "weight" to 2x or 4x if necessary. Please contact HMDC support (support@hmdc.harvard.edu)
+if you're running into any performance issues.
+
+* R apps timeout on the client side after 60 seconds of inactivity, meaning that if a user is not actively using the widgets
+displayed on the screen, the screen will turn grey in order to accomodate other traffic. You may extend this tiemout
+by following this [guide from domino data labs](https://support.dominodatalab.com/hc/en-us/articles/360015932932-Increasing-the-timeout-for-Shiny-Server)
 
 ## Credits
 
