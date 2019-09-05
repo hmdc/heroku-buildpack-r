@@ -242,8 +242,6 @@ fakechroot fakeroot chroot $CHROOT_DIR \
 
 popd > /dev/null
 
-# Aptfile?
-
 topic "Installing Pandoc"
 
 fakechroot fakeroot chroot $CHROOT_DIR \
@@ -251,6 +249,11 @@ fakechroot fakeroot chroot $CHROOT_DIR \
 
 fakechroot fakeroot chroot $CHROOT_DIR \
   dpkg -i /tmp/pandoc.deb
+
+fakechroot fakeroot chroot $CHROOT_DIR \
+  rm -f -v /tmp/pandoc.deb
+
+# Aptfile?
 
 if [[ -f "$BUILD_DIR/Aptfile" ]]; then
 
