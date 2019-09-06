@@ -292,7 +292,7 @@ else
   unset INIT_FILE
 fi
 
-COMPILEMARKDOWN="$BUILD_DIR/compileMarkdown.R"
+COMPILEMARKDOWN="$CHROOT_DIR/app/compileMarkdown.R"
 cp "$BUILDPACK_DIR/bin/compileMarkdown.R" $COMPILEMARKDOWN
 
 if [[ ! -z "$INIT_FILE" ]]; then
