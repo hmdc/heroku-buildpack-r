@@ -298,7 +298,9 @@ if [[ ! -z "$INIT_FILE" ]]; then
 
   # prepare wrapper script
   WRAPPER="$BUILD_DIR/wrapper.R"
+  COMPILEMARKDOWN="$BUILD_DIR/compileMarkdown.R"
   cp "$BUILDPACK_DIR/bin/wrapper.R" $WRAPPER
+  cp "$BUILDPACK_DIR/bin/compileMarkdown.R" $COMPILEMARKDOWN
 
   # perform insertions
   #  would have preferred to use sed or awk for this, but it's real tricky with multi-line
