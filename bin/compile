@@ -325,7 +325,7 @@ if [[ ! -z "$INIT_FILE" ]]; then
 
 fi
 
-# packrat?
+
 if [[ -f "$BUILD_DIR/packrat/init.R" ]]; then
 
   topic "Restoring Packrat packages"
@@ -336,8 +336,16 @@ if [[ -f "$BUILD_DIR/packrat/init.R" ]]; then
 
 fi
 
+
 echo "R $R_VERSION installed. Please check outputs for any failures." | indent
 
+if [[ $(find . "${BUILD_DIR}" -type d -name packrat -prune -o -name "*.Rmd" -print|grep ".") ]]; then
+  topic "Compiling RMarkdown files"
+  ln -sfv "${CHROOT_DIR}/packrat/lib" "${BUILD_DIR}/packrat/lib"
+  fakechroot fakeroot chroot $CHROOT_DIR \
+      /bin/sh -c 'cd /app && /usr/bin/R --no-init-file --no-save --quiet --slave --file=/app/compileMarkdown.R' 2>&1 | indent
+  rm "${BUILD_DIR}/packrat/lib"
+fi
 
 # need to copy files back, since will be symlinked at runtime
 # and since other buildpacks may be used, so files expected to be in /app
