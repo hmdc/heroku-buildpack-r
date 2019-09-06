@@ -9,6 +9,7 @@ mkdir -p /app/apache/logs
 mkdir -p /app/apache/var/cache
 touch /app/apache/logs/error_log
 touch /app/apache/logs/access_log
+mkdir -v /app/.root/tmp/R
 ln -sfv /app/.root/tmp/R /tmp/R
 COMMAND="${@:$n}"
 echo "Launching ${COMMAND}..."
