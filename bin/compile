@@ -346,7 +346,7 @@ if [[ $(find . "${BUILD_DIR}" -type d -name packrat -prune -o -name "*.Rmd" -pri
   topic "Compiling RMarkdown files"
   ln -sfv "${CHROOT_DIR}/packrat/lib" "${BUILD_DIR}/packrat/lib"
   fakechroot fakeroot chroot $CHROOT_DIR \
-      /bin/sh -c 'cd /app && /usr/bin/R --no-init-file --no-save --quiet --slave --file=/app/compileMarkdown.R' 2>&1 | indent
+      /bin/sh -c 'cd /app && /usr/bin/R --no-save --quiet --slave --file=/app/compileMarkdown.R' 2>&1 | indent
   rm "${BUILD_DIR}/packrat/lib"
 fi
 
