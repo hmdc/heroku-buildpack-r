@@ -348,6 +348,7 @@ if [[ $(find . "${BUILD_DIR}" -type d -name packrat -prune -o -name "*.Rmd" -pri
   ln -sfv "${CHROOT_DIR}/app/packrat/lib" "/app/packrat/lib"
   fakechroot fakeroot chroot $CHROOT_DIR \
       /bin/sh -c 'cd /app && /usr/bin/R --no-save --quiet --slave --file=/app/compileMarkdown.R' 2>&1 | indent
+  ls "${CHROOT_DIR}/app"
   cp -v "${CHROOT_DIR}/app/*.html" $BUILD_DIR
   rm -rfv "/app/packrat"
 fi
