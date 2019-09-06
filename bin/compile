@@ -344,10 +344,11 @@ echo "R $R_VERSION installed. Please check outputs for any failures." | indent
 
 if [[ $(find . "${BUILD_DIR}" -type d -name packrat -prune -o -name "*.Rmd" -print|grep ".") ]]; then
   topic "Compiling RMarkdown files"
+  mkdir -p /app/packrat
   ln -sfv "${CHROOT_DIR}/packrat/lib" "/app/packrat/lib"
   fakechroot fakeroot chroot $CHROOT_DIR \
       /bin/sh -c 'cd /app && /usr/bin/R --no-save --quiet --slave --file=/app/compileMarkdown.R' 2>&1 | indent
-  rm "/app/packrat/lib"
+  rm -rfv "/app/packrat"
 fi
 
 # need to copy files back, since will be symlinked at runtime
