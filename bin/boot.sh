@@ -7,9 +7,10 @@ n=1
 
 mkdir -p /app/apache/logs
 mkdir -p /app/apache/var/cache
+mkdir -p /tmp/R
 touch /app/apache/logs/error_log
 touch /app/apache/logs/access_log
-
+ln -sf /app/.root/tmp/R /tmp/R
 COMMAND="${@:$n}"
 echo "Launching ${COMMAND}..."
 eval "${COMMAND}" &
