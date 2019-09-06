@@ -11,6 +11,7 @@ touch /app/apache/logs/error_log
 touch /app/apache/logs/access_log
 mkdir -v /app/.root/tmp/R
 ln -sfv /app/.root/tmp/R /tmp/R
+ln -sfv /app/.root/app/packrat/lib /app/packrat/lib
 COMMAND="${@:$n}"
 echo "Launching ${COMMAND}..."
 eval "${COMMAND}" &
