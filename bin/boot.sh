@@ -19,6 +19,7 @@ cat<<EOF > /app/.root/usr/bin/pandoc
 echo "$@" >> /tmp/pandoc.log
 exec /usr/bin/pandoc "$@"
 EOF
+chmod a+x /app/.root/usr/bin/pandoc
 
 COMMAND="${@:$n}"
 echo "Launching ${COMMAND}..."
