@@ -242,16 +242,16 @@ fakechroot fakeroot chroot $CHROOT_DIR \
 
 popd > /dev/null
 
-topic "Installing Pandoc"
+#topic "Installing Pandoc"
 
-fakechroot fakeroot chroot $CHROOT_DIR \
-  curl -L https://github.com/jgm/pandoc/releases/download/2.7.3/pandoc-2.7.3-1-amd64.deb -o /tmp/pandoc.deb
+#fakechroot fakeroot chroot $CHROOT_DIR \
+#  curl -L https://github.com/jgm/pandoc/releases/download/2.7.3/pandoc-2.7.3-1-amd64.deb -o /tmp/pandoc.deb
 
-fakechroot fakeroot chroot $CHROOT_DIR \
-  dpkg -i /tmp/pandoc.deb
+#fakechroot fakeroot chroot $CHROOT_DIR \
+#  dpkg -i /tmp/pandoc.deb
 
-fakechroot fakeroot chroot $CHROOT_DIR \
-  rm -f -v /tmp/pandoc.deb
+#fakechroot fakeroot chroot $CHROOT_DIR \
+#  rm -f -v /tmp/pandoc.deb
 
 # Aptfile?
 
@@ -342,27 +342,15 @@ fi
 
 echo "R $R_VERSION installed. Please check outputs for any failures." | indent
 
-# if [[ $(find . "${BUILD_DIR}" -type d -name packrat -prune -o -name "*.Rmd" -print|grep ".") ]]; then
-#  topic "Compiling RMarkdown files"
-#  mkdir -p /app/packrat
-#  ln -sfv "${CHROOT_DIR}/app/packrat/lib" "/app/packrat/lib"
-#  fakechroot fakeroot chroot $CHROOT_DIR \
-#      /bin/sh -c 'cd /app && /usr/bin/R --no-save --quiet --slave --file=/app/compileMarkdown.R' 2>&1 | indent
-#  cp -a ${CHROOT_DIR}/app/*.html ${CHROOT_DIR}/app/*_cache ${CHROOT_DIR}/app/*_files $BUILD_DIR
-#  rm -rfv "/app/packrat"
-# fi
-
-# need to copy files back, since will be symlinked at runtime
-# and since other buildpacks may be used, so files expected to be in /app
-# rsync --recursive --ignore-existing $CHROOT_DIR/app/ $BUILD_DIR
-
-
-# # fix up /app symlink for runtime location
-# pushd $CHROOT_DIR > /dev/null
-# rm -rf app
-# ln -s /app app
-# popd > /dev/null
-
+if [[ $(find . "${BUILD_DIR}" -type d -name packrat -prune -o -name "*.Rmd" -print|grep ".") ]]; then
+  topic "Compiling RMarkdown files"
+  mkdir -p /app/packrat
+  ln -sfv "${CHROOT_DIR}/app/packrat/lib" "/app/packrat/lib"
+  fakechroot fakeroot chroot $CHROOT_DIR \
+     /bin/sh -c 'cd /app && /usr/bin/R --no-save --quiet --slave --file=/app/compileMarkdown.R' 2>&1 | indent
+  cp -a ${CHROOT_DIR}/app/*.html ${CHROOT_DIR}/app/*_cache ${CHROOT_DIR}/app/*_files $BUILD_DIR
+  rm -rfv "/app/packrat"
+fi
 
 # when deployed, the path will be /app
 patch_chroot "$BUILD_DIR" "/app"
