@@ -281,17 +281,6 @@ if [[ -f "$BUILD_DIR/Aptfile" ]]; then
 
 fi
 
-topic "Installing Pandoc"
-
-fakechroot fakeroot chroot $CHROOT_DIR \
-  curl -L https://github.com/jgm/pandoc/releases/download/2.0/pandoc-2.0-3-amd64.deb -o /tmp/pandoc.deb
-
-fakechroot fakeroot chroot $CHROOT_DIR \
-  dpkg -i /tmp/pandoc.deb
-
-fakechroot fakeroot chroot $CHROOT_DIR \
- rm -f -v /tmp/pandoc.deb
-
 topic "Making R temporary directory"
 fakechroot fakeroot chroot $CHROOT_DIR \
      /bin/sh -c "mkdir -p /tmp/R"
