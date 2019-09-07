@@ -281,6 +281,10 @@ if [[ -f "$BUILD_DIR/Aptfile" ]]; then
 
 fi
 
+topic "Making R temporary directory"
+fakechroot fakeroot chroot $CHROOT_DIR \
+     /bin/sh -c "mkdir -p /tmp/R"
+
 # get the init.r file to use
 # it can be init.[rR] or run.R
 if [[ -f "$BUILD_DIR/init.r" ]]; then
