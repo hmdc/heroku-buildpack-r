@@ -13,8 +13,8 @@ mkdir -v /app/.root/tmp/R
 ln -sfv /app/.root/tmp/R /tmp/R
 ln -sfv /app/.root/app/packrat/lib /app/packrat/lib
 
-mv /app/.root/bin/pandoc /app/.root/bin/pandoc.new
-cat<<EOF > /app/.root/bin/pandoc
+mv /app/.root/usr/bin/pandoc /app/.root/usr/bin/pandoc.new
+cat<<EOF > /app/.root/usr/bin/pandoc
 #!/bin/bash
 echo "$@" >> /tmp/pandoc.log
 exec /usr/bin/pandoc "$@"
