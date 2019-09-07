@@ -17,7 +17,8 @@ mv /app/.root/usr/bin/pandoc /app/.root/usr/bin/pandoc.new
 cat<<EOF > /app/.root/usr/bin/pandoc
 #!/bin/bash
 echo "\$@" >> /tmp/pandoc.log
-exec /usr/bin/pandoc.new "\$@"
+ls -all /tmp/R >> /tmp/pandoc.log
+/usr/bin/pandoc.new "\$@" | tee -a /tmp/pandoc.log
 EOF
 chmod a+x /app/.root/usr/bin/pandoc
 
