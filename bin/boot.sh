@@ -18,7 +18,8 @@ cat<<EOF > /app/.root/usr/bin/pandoc
 #!/bin/bash
 echo "\$@" >> /tmp/pandoc.log
 ls -alR /tmp/R >> /tmp/pandoc.log
-/usr/bin/pandoc.new "\$@" | tee -a /tmp/pandoc.log
+ARGS_RELATIVE=$(echo "\$@"|sed -e 's/app\///g')
+/usr/bin/pandoc.new "\$ARGS_RELATIVE" | tee -a /tmp/pandoc.log
 EOF
 chmod a+x /app/.root/usr/bin/pandoc
 
