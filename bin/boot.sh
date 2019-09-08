@@ -18,7 +18,7 @@ cat<<EOF > /app/.root/usr/bin/pandoc
 #!/bin/bash
 echo "\$@" >> /tmp/pandoc.log
 ls -alR /tmp/R >> /tmp/pandoc.log
-ARGS_RELATIVE=\$(echo "\$@"|sed -e 's/\/app\///g')
+ARGS_RELATIVE=\$(echo "\$@"|sed -e 's/\/app\///g;s/\/tmp/\.\.\/tmp/g')
 echo "\$ARGS_RELATIVE" >> /tmp/pandoc
 /usr/bin/pandoc.new \$ARGS_RELATIVE | tee -a /tmp/pandoc.log
 EOF
