@@ -12,12 +12,12 @@ touch /app/apache/logs/access_log
 mv /app/.root/usr/bin/pandoc /app/.root/usr/bin/pandoc.new
 cat<<EOF > /app/.root/usr/bin/pandoc
 #!/bin/bash
-ARGS_RELATIVE=\$(echo "\$@"|sed -e 's/\/app\///g')
-echo "==Old Args==" >> /tmp/pandoc.log
-echo "\$@" >> /tmp/pandoc.log
-echo "==New Args==" >> /tmp/pandoc.log
-echo "\$ARGS_RELATIVE" >> /tmp/pandoc.log
-echo "==Files==" >> /tmp/pandoc.log
+#ARGS_RELATIVE=\$(echo "\$@"|sed -e 's/\/app\///g')
+#echo "==Old Args==" >> /tmp/pandoc.log
+#echo "\$@" >> /tmp/pandoc.log
+#echo "==New Args==" >> /tmp/pandoc.log
+#echo "\$ARGS_RELATIVE" >> /tmp/pandoc.log
+#echo "==Files==" >> /tmp/pandoc.log
 ls -alR /tmp >> /tmp/pandoc.log
 pwd >> /tmp/pandoc.log
 /usr/bin/pandoc.new \$ARGS_RELATIVE --verbose 2>&1 | tee -a /tmp/pandoc.log
