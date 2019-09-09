@@ -9,16 +9,13 @@ mkdir -p /app/apache/logs
 mkdir -p /app/apache/var/cache
 touch /app/apache/logs/error_log
 touch /app/apache/logs/access_log
-mkdir -v /app/.root/tmp/R
-ln -sfv /app/.root/tmp/R /tmp/R
-ln -sfv /app/.root/app/packrat/lib /app/packrat/lib
 
 mv /app/.root/usr/bin/pandoc /app/.root/usr/bin/pandoc.new
 cat<<EOF > /app/.root/usr/bin/pandoc
 #!/bin/bash
 echo "\$@" >> /tmp/pandoc.log
 ls -alR /tmp/R >> /tmp/pandoc.log
-ARGS_RELATIVE=\$(echo "\$@"|sed -e 's/\/app\///g;s/\/tmp/\.\.\/tmp/g')
+ARGS_RELATIVE=\$(echo "\$@")
 echo "\$ARGS_RELATIVE" >> /tmp/pandoc
 /usr/bin/pandoc.new \$ARGS_RELATIVE | tee -a /tmp/pandoc.log
 EOF
