@@ -242,19 +242,7 @@ fakechroot fakeroot chroot $CHROOT_DIR \
 
 popd > /dev/null
 
-topic "Installing Pandoc"
-
-fakechroot fakeroot chroot $CHROOT_DIR \
-  curl -L https://github.com/jgm/pandoc/releases/download/2.7.3/pandoc-2.7.3-1-amd64.deb -o /tmp/pandoc.deb
-
-fakechroot fakeroot chroot $CHROOT_DIR \
-  dpkg -i /tmp/pandoc.deb
-
-fakechroot fakeroot chroot $CHROOT_DIR \
-  rm -f -v /tmp/pandoc.deb
-
 # Aptfile?
-
 if [[ -f "$BUILD_DIR/Aptfile" ]]; then
 
   topic "Installing binary dependencies from Aptfile"
