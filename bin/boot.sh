@@ -12,7 +12,7 @@ touch /app/apache/logs/access_log
 mv /app/.root/usr/bin/pandoc /app/.root/usr/bin/pandoc.new
 cat<<EOF > /app/.root/usr/bin/pandoc
 #!/bin/bash
-ARGS_RELATIVE=\$(echo "\$@"|sed -e 's/\/app\///g;s/\/tmp/\/app\/\.root\/tmp/g')
+ARGS_RELATIVE=\$(echo "\$@"|sed -e 's/\/app\///g')
 echo "==Old Args==" >> /tmp/pandoc.log
 echo "\$@" >> /tmp/pandoc.log
 echo "==New Args==" >> /tmp/pandoc.log
