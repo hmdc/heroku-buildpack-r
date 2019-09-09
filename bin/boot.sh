@@ -21,7 +21,7 @@ echo "==Files==" >> /tmp/pandoc.log
 ls -alR /tmp >> /tmp/pandoc.log
 echo "==CURRENT=="
 pwd >> /tmp/pandoc.log
-/usr/bin/pandoc.new \$ARGS_RELATIVE --verbose 2>&1 | tee -a /tmp/pandoc.log
+/usr/bin/pandoc.new \$ARGS_RELATIVE 2>&1 | tee -a /tmp/pandoc.log
 EOF
 chmod a+x /app/.root/usr/bin/pandoc
 
