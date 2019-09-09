@@ -9,7 +9,6 @@ mkdir -p /app/apache/logs
 mkdir -p /app/apache/var/cache
 touch /app/apache/logs/error_log
 touch /app/apache/logs/access_log
-
 mv /app/.root/usr/bin/pandoc /app/.root/usr/bin/pandoc.new
 cat<<EOF > /app/.root/usr/bin/pandoc
 #!/bin/bash
@@ -20,8 +19,7 @@ echo "==New Args==" >> /tmp/pandoc.log
 echo "\$ARGS_RELATIVE" >> /tmp/pandoc.log
 echo "==Files==" >> /tmp/pandoc.log
 ls -alR /tmp/R >> /tmp/pandoc.log
-
-/usr/bin/pandoc.new \$ARGS_RELATIVE | tee -a /tmp/pandoc.log
+/usr/bin/pandoc.new \$ARGS_RELATIVE --verbose 2>&1 >> /tmp/pandoc.log
 EOF
 chmod a+x /app/.root/usr/bin/pandoc
 

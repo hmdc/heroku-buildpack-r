@@ -35,5 +35,5 @@ fi
 for port in $(seq $PORT_START $PORT_END)
 do
 	echo "Starting worker on $port..."
-	env R -f /app/run.R --gui-none --no-save --args $port &
+	R -f /app/run.R --gui-none --no-save --args $port &
 done
